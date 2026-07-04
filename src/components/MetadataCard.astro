@@ -1,0 +1,281 @@
+---
+// MetadataCard — File details, quality selector, mirror selector, download
+---
+
+<div class="meta" id="metadata-card">
+  <!-- File info -->
+  <div class="meta__section">
+    <h3 class="eyebrow">File Details</h3>
+    <div class="meta__grid">
+      <div class="meta__field">
+        <span class="meta__label">File Name</span>
+        <span class="meta__value" id="meta-filename">—</span>
+      </div>
+      <div class="meta__field">
+        <span class="meta__label">Size</span>
+        <span class="meta__value" id="meta-filesize">—</span>
+      </div>
+      <div class="meta__field">
+        <span class="meta__label">Type</span>
+        <span class="meta__value" id="meta-type-wrapper">
+          <span class="meta__type-icon" id="meta-type-icon"></span>
+          <span id="meta-mediatype">—</span>
+        </span>
+      </div>
+      <div class="meta__field">
+        <span class="meta__label">Extension</span>
+        <span class="meta__value">
+          <span class="badge" id="meta-extension">—</span>
+        </span>
+      </div>
+      <div class="meta__field">
+        <span class="meta__label">Mirror</span>
+        <span class="meta__value" id="meta-mirror-status">
+          <span class="meta__mirror-dot" id="mirror-dot"></span>
+          <span id="mirror-text">Disconnected</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quality Selector -->
+  <div class="meta__section">
+    <h3 class="eyebrow">Quality</h3>
+    <div class="meta__quality" id="quality-selector">
+      <button class="meta__quality-btn" data-quality="480p">480p</button>
+      <button class="meta__quality-btn meta__quality-btn--active" data-quality="720p">720p</button>
+      <button class="meta__quality-btn" data-quality="1080p">1080p</button>
+    </div>
+  </div>
+
+  <!-- Mirror Selector -->
+  <div class="meta__section">
+    <h3 class="eyebrow">Stream Mirror</h3>
+    <select class="meta__mirror-select" id="mirror-selector">
+      <option value="">Select mirror...</option>
+    </select>
+  </div>
+
+  <!-- Download Button -->
+  <div class="meta__section">
+    <button class="btn btn-primary btn-lg meta__download-btn" id="download-btn" style="width: 100%;" disabled>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Download File
+    </button>
+  </div>
+</div>
+
+<script>
+  import { $stream, handleQualityChange, handleMirrorChange, handleDownload } from '../stores/stream';
+  import type { QualityOption } from '../stores/stream';
+
+  function initMetadata() {
+    const filenameEl = document.getElementById('meta-filename') as HTMLElement;
+    const filesizeEl = document.getElementById('meta-filesize') as HTMLElement;
+    const mediatypeEl = document.getElementById('meta-mediatype') as HTMLElement;
+    const extensionEl = document.getElementById('meta-extension') as HTMLElement;
+    const mirrorDot = document.getElementById('mirror-dot') as HTMLElement;
+    const mirrorText = document.getElementById('mirror-text') as HTMLElement;
+    const typeIcon = document.getElementById('meta-type-icon') as HTMLElement;
+    const qualitySelector = document.getElementById('quality-selector') as HTMLElement;
+    const mirrorSelector = document.getElementById('mirror-selector') as HTMLSelectElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    // State subscription
+    $stream.subscribe(state => {
+      if (state.status === 'playing') {
+        filenameEl.textContent = state.fileName;
+        filesizeEl.textContent = state.fileSize;
+        mediatypeEl.textContent = state.mediaType.charAt(0).toUpperCase() + state.mediaType.slice(1);
+        extensionEl.textContent = `.${state.extension}`;
+        mirrorDot.classList.add('meta__mirror-dot--online');
+        mirrorText.textContent = state.mirrorStatus;
+        downloadBtn.disabled = false;
+
+        // Type icon
+        if (state.mediaType === 'video') {
+          typeIcon.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1"/><path d="M5.5 6v2l2-1-2-1z" fill="currentColor"/></svg>';
+        } else if (state.mediaType === 'audio') {
+          typeIcon.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1"/><circle cx="7" cy="7" r="2" fill="currentColor"/></svg>';
+        } else {
+          typeIcon.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 1h4l3 3v8a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" stroke-width="1"/></svg>';
+        }
+
+        // Populate mirror dropdown
+        if (mirrorSelector.options.length <= 1) {
+          state.mirrors.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.label} (${m.region}) — ${m.latency}ms`;
+            if (m.id === state.activeMirror) opt.selected = true;
+            mirrorSelector.appendChild(opt);
+          });
+        }
+
+        // Update quality buttons
+        qualitySelector.querySelectorAll('.meta__quality-btn').forEach(btn => {
+          const q = (btn as HTMLElement).dataset.quality;
+          btn.classList.toggle('meta__quality-btn--active', q === state.quality);
+        });
+
+      } else if (state.status === 'idle') {
+        filenameEl.textContent = '—';
+        filesizeEl.textContent = '—';
+        mediatypeEl.textContent = '—';
+        extensionEl.textContent = '—';
+        mirrorDot.classList.remove('meta__mirror-dot--online');
+        mirrorText.textContent = 'Disconnected';
+        downloadBtn.disabled = true;
+        typeIcon.innerHTML = '';
+      }
+    });
+
+    // Quality buttons
+    qualitySelector?.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('.meta__quality-btn') as HTMLElement | null;
+      if (!target) return;
+      const quality = target.dataset.quality as QualityOption;
+      handleQualityChange(quality);
+    });
+
+    // Mirror selector
+    mirrorSelector?.addEventListener('change', () => {
+      if (mirrorSelector.value) handleMirrorChange(mirrorSelector.value);
+    });
+
+    // Download
+    downloadBtn?.addEventListener('click', handleDownload);
+  }
+
+  initMetadata();
+  document.addEventListener('astro:after-swap', initMetadata);
+</script>
+
+<style>
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    overflow: hidden;
+  }
+
+  .meta__section {
+    padding: var(--spacing-base);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+  .meta__section:last-child {
+    border-bottom: none;
+  }
+
+  .meta__section .eyebrow {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .meta__grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .meta__field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  .meta__label {
+    font-size: var(--text-caption);
+    color: var(--color-ink-faint);
+    flex-shrink: 0;
+  }
+
+  .meta__value {
+    font-size: var(--text-body-sm);
+    color: var(--color-ink);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .meta__type-icon {
+    display: inline-flex;
+    color: var(--color-ink-muted);
+  }
+
+  /* Mirror dot */
+  .meta__mirror-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-ink-faint);
+    flex-shrink: 0;
+  }
+  .meta__mirror-dot--online {
+    background-color: var(--color-success);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  /* Quality selector */
+  .meta__quality {
+    display: flex;
+    gap: var(--spacing-xs);
+  }
+  .meta__quality-btn {
+    flex: 1;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-ink-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  .meta__quality-btn:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-ink);
+  }
+  .meta__quality-btn--active {
+    background-color: var(--color-accent);
+    color: var(--color-canvas);
+    border-color: var(--color-accent);
+  }
+
+  /* Mirror dropdown */
+  .meta__mirror-select {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23888888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .meta__mirror-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  /* Download */
+  .meta__download-btn {
+    font-weight: 600;
+  }
+</style>

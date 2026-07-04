@@ -1,0 +1,316 @@
+---
+// AuthModal — Login / Signup overlay
+---
+
+<div class="auth-overlay" id="auth-overlay" aria-hidden="true">
+  <div class="auth-scrim" id="auth-scrim"></div>
+  <div class="auth-modal" id="auth-modal" role="dialog" aria-labelledby="auth-title">
+    <!-- Close button -->
+    <button class="auth-modal__close" id="auth-close" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <!-- Logo -->
+    <div class="auth-modal__logo">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <rect x="1" y="1" width="26" height="26" rx="6" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M8 10h12M14 10v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <!-- Title -->
+    <h2 class="auth-modal__title" id="auth-title">Sign In</h2>
+    <p class="auth-modal__subtitle" id="auth-subtitle">Enter your credentials to continue</p>
+
+    <!-- Error -->
+    <div class="auth-modal__error" id="auth-error" style="display: none;">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1"/>
+        <path d="M7 4v4M7 10h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span id="auth-error-text"></span>
+    </div>
+
+    <!-- Login form -->
+    <form class="auth-modal__form" id="login-form">
+      <div class="auth-modal__field">
+        <label class="auth-modal__label" for="login-email">Email</label>
+        <input class="input" type="email" id="login-email" placeholder="you@example.com" autocomplete="username" required />
+      </div>
+      <div class="auth-modal__field">
+        <label class="auth-modal__label" for="login-password">Password</label>
+        <input class="input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required minlength="6" />
+      </div>
+      <button class="btn btn-primary btn-lg auth-modal__submit" type="submit" id="login-submit" style="width: 100%;">
+        <span id="login-submit-text">Sign In</span>
+      </button>
+    </form>
+
+    <!-- Signup form -->
+    <form class="auth-modal__form" id="signup-form" style="display: none;">
+      <div class="auth-modal__field">
+        <label class="auth-modal__label" for="signup-email">Email</label>
+        <input class="input" type="email" id="signup-email" placeholder="you@example.com" autocomplete="username" required />
+      </div>
+      <div class="auth-modal__field">
+        <label class="auth-modal__label" for="signup-password">Password</label>
+        <input class="input" type="password" id="signup-password" placeholder="••••••••" autocomplete="new-password" required minlength="6" />
+      </div>
+      <div class="auth-modal__field">
+        <label class="auth-modal__label" for="signup-confirm">Confirm Password</label>
+        <input class="input" type="password" id="signup-confirm" placeholder="••••••••" autocomplete="new-password" required minlength="6" />
+      </div>
+      <button class="btn btn-primary btn-lg auth-modal__submit" type="submit" id="signup-submit" style="width: 100%;">
+        <span id="signup-submit-text">Create Account</span>
+      </button>
+    </form>
+
+    <!-- Toggle -->
+    <p class="auth-modal__toggle">
+      <span id="auth-toggle-text">Don't have an account?</span>
+      <button class="auth-modal__toggle-btn" id="auth-toggle-btn" type="button">Sign Up</button>
+    </p>
+  </div>
+</div>
+
+<script>
+  import { $authModal, $authError, $authLoading, closeAuth, toggleAuthView, handleLogin, handleSignup } from '../stores/auth';
+
+  function initAuthModal() {
+    const overlay = document.getElementById('auth-overlay') as HTMLElement;
+    const scrim = document.getElementById('auth-scrim') as HTMLElement;
+    const closeBtn = document.getElementById('auth-close') as HTMLElement;
+    const title = document.getElementById('auth-title') as HTMLElement;
+    const subtitle = document.getElementById('auth-subtitle') as HTMLElement;
+    const loginForm = document.getElementById('login-form') as HTMLFormElement;
+    const signupForm = document.getElementById('signup-form') as HTMLFormElement;
+    const toggleText = document.getElementById('auth-toggle-text') as HTMLElement;
+    const toggleBtn = document.getElementById('auth-toggle-btn') as HTMLElement;
+    const errorEl = document.getElementById('auth-error') as HTMLElement;
+    const errorText = document.getElementById('auth-error-text') as HTMLElement;
+    const loginSubmitText = document.getElementById('login-submit-text') as HTMLElement;
+    const signupSubmitText = document.getElementById('signup-submit-text') as HTMLElement;
+
+    // Modal state
+    $authModal.subscribe(state => {
+      if (state === 'closed') {
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.classList.remove('auth-overlay--open');
+        document.body.style.overflow = '';
+      } else {
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.classList.add('auth-overlay--open');
+        document.body.style.overflow = 'hidden';
+
+        if (state === 'login') {
+          title.textContent = 'Sign In';
+          subtitle.textContent = 'Enter your credentials to continue';
+          loginForm.style.display = 'flex';
+          signupForm.style.display = 'none';
+          toggleText.textContent = "Don't have an account?";
+          toggleBtn.textContent = 'Sign Up';
+        } else {
+          title.textContent = 'Create Account';
+          subtitle.textContent = 'Get started with TeraPlay';
+          loginForm.style.display = 'none';
+          signupForm.style.display = 'flex';
+          toggleText.textContent = 'Already have an account?';
+          toggleBtn.textContent = 'Sign In';
+        }
+      }
+    });
+
+    // Error
+    $authError.subscribe(err => {
+      if (err) {
+        errorEl.style.display = 'flex';
+        errorText.textContent = err;
+      } else {
+        errorEl.style.display = 'none';
+      }
+    });
+
+    // Loading
+    $authLoading.subscribe(loading => {
+      loginSubmitText.textContent = loading ? 'Signing in...' : 'Sign In';
+      signupSubmitText.textContent = loading ? 'Creating...' : 'Create Account';
+    });
+
+    // Close
+    scrim?.addEventListener('click', closeAuth);
+    closeBtn?.addEventListener('click', closeAuth);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAuth();
+    });
+
+    // Toggle
+    toggleBtn?.addEventListener('click', toggleAuthView);
+
+    // Login submit
+    loginForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('login-email') as HTMLInputElement).value;
+      const password = (document.getElementById('login-password') as HTMLInputElement).value;
+      await handleLogin(email, password);
+    });
+
+    // Signup submit
+    signupForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('signup-email') as HTMLInputElement).value;
+      const password = (document.getElementById('signup-password') as HTMLInputElement).value;
+      const confirm = (document.getElementById('signup-confirm') as HTMLInputElement).value;
+      await handleSignup(email, password, confirm);
+    });
+  }
+
+  initAuthModal();
+  document.addEventListener('astro:after-swap', initAuthModal);
+</script>
+
+<style>
+  .auth-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-normal) var(--ease-out);
+  }
+  .auth-overlay--open {
+    pointer-events: auto;
+    opacity: 1;
+  }
+
+  .auth-scrim {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+  }
+
+  .auth-modal {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: var(--spacing-base);
+    padding: var(--spacing-xl);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    z-index: 1;
+    transform: translateY(8px);
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+  .auth-overlay--open .auth-modal {
+    transform: translateY(0);
+  }
+
+  .auth-modal__close {
+    position: absolute;
+    top: var(--spacing-base);
+    right: var(--spacing-base);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-ink-muted);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  .auth-modal__close:hover {
+    color: var(--color-ink);
+    border-color: var(--color-border-hover);
+    background-color: var(--color-surface-hover);
+  }
+
+  .auth-modal__logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-ink);
+  }
+
+  .auth-modal__title {
+    text-align: center;
+    font-size: var(--text-heading-3);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .auth-modal__subtitle {
+    text-align: center;
+    font-size: var(--text-body-sm);
+    color: var(--color-ink-muted);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .auth-modal__error {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-error-muted);
+    border: 1px solid var(--color-error-muted);
+    border-radius: var(--radius-md);
+    color: var(--color-error);
+    font-size: var(--text-body-sm);
+    margin-bottom: var(--spacing-base);
+  }
+
+  .auth-modal__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-base);
+  }
+
+  .auth-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .auth-modal__label {
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .auth-modal__submit {
+    margin-top: var(--spacing-sm);
+    font-weight: 600;
+  }
+
+  .auth-modal__toggle {
+    text-align: center;
+    margin-top: var(--spacing-lg);
+    font-size: var(--text-body-sm);
+    color: var(--color-ink-muted);
+  }
+
+  .auth-modal__toggle-btn {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    padding: 0;
+    margin-left: var(--spacing-xs);
+  }
+  .auth-modal__toggle-btn:hover {
+    color: var(--color-accent-hover);
+  }
+</style>

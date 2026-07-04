@@ -1,0 +1,302 @@
+---
+// HeroInput — Center-stage URL input terminal
+---
+
+<section class="hero" id="hero-section">
+  <div class="hero__inner container-narrow">
+    <!-- Eyebrow -->
+    <p class="hero__eyebrow eyebrow">TERABOX LINK EXTRACTOR</p>
+
+    <!-- Headline -->
+    <h1 class="hero__title">
+      Stream & Download<br/>
+      <span class="hero__title-accent">Without Limits</span>
+    </h1>
+
+    <!-- Subtitle -->
+    <p class="hero__subtitle">
+      Bypass forced app blocks. Paste any TeraBox link and get instant direct streaming or download — no ads, no redirects.
+    </p>
+
+    <!-- Input Terminal -->
+    <div class="hero__terminal" id="hero-terminal">
+      <div class="hero__input-wrapper">
+        <div class="hero__input-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M7.5 3.75L3.75 7.5L7.5 11.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.75 7.5H12.75C13.5456 7.5 14.3087 7.81607 14.8713 8.37868C15.4339 8.94129 15.75 9.70435 15.75 10.5V14.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <input
+          type="url"
+          id="url-input"
+          class="hero__input"
+          placeholder="https://terabox.com/s/your-link-here"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="TeraBox URL"
+        />
+        <button class="hero__fetch-btn btn btn-primary" id="fetch-btn" type="button">
+          <span class="hero__fetch-text">Fetch & Stream</span>
+          <svg class="hero__fetch-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Loading overlay -->
+      <div class="hero__loading" id="hero-loading" aria-hidden="true">
+        <div class="hero__loading-bar"></div>
+      </div>
+    </div>
+
+    <!-- Supported types tags -->
+    <div class="hero__tags">
+      <span class="badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <rect x="1" y="2" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1"/>
+          <path d="M5 5v2l1.5-1L5 5z" fill="currentColor"/>
+        </svg>
+        Video
+      </span>
+      <span class="badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1"/>
+          <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+        </svg>
+        Audio
+      </span>
+      <span class="badge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M3 1h4l3 3v7a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" stroke-width="1"/>
+          <path d="M7 1v3h3" stroke="currentColor" stroke-width="1"/>
+        </svg>
+        Docs
+      </span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { $stream, handleFetchLink } from '../stores/stream';
+
+  function initHero() {
+    const urlInput = document.getElementById('url-input') as HTMLInputElement;
+    const fetchBtn = document.getElementById('fetch-btn') as HTMLButtonElement;
+    const loading = document.getElementById('hero-loading') as HTMLElement;
+    const terminal = document.getElementById('hero-terminal') as HTMLElement;
+
+    if (!urlInput || !fetchBtn) return;
+
+    // Fetch handler
+    async function onFetch() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        urlInput.focus();
+        terminal.classList.add('hero__terminal--error');
+        setTimeout(() => terminal.classList.remove('hero__terminal--error'), 600);
+        return;
+      }
+      fetchBtn.disabled = true;
+      await handleFetchLink(url);
+      fetchBtn.disabled = false;
+
+      // Scroll to workspace
+      const workspace = document.getElementById('media-workspace');
+      if (workspace) {
+        workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    fetchBtn.addEventListener('click', onFetch);
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') onFetch();
+    });
+
+    // Loading state
+    $stream.subscribe(state => {
+      if (state.status === 'fetching' || state.status === 'resolving') {
+        loading.setAttribute('aria-hidden', 'false');
+        loading.classList.add('hero__loading--active');
+      } else {
+        loading.setAttribute('aria-hidden', 'true');
+        loading.classList.remove('hero__loading--active');
+      }
+    });
+  }
+
+  initHero();
+  document.addEventListener('astro:after-swap', initHero);
+</script>
+
+<style>
+  .hero {
+    padding-top: calc(var(--header-height) + var(--spacing-4xl));
+    padding-bottom: var(--spacing-3xl);
+    text-align: center;
+  }
+
+  .hero__eyebrow {
+    margin-bottom: var(--spacing-base);
+  }
+
+  .hero__title {
+    font-size: var(--text-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--color-ink);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .hero__title-accent {
+    background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero__subtitle {
+    font-size: var(--text-body-lg);
+    color: var(--color-ink-muted);
+    max-width: 520px;
+    margin: 0 auto var(--spacing-xl);
+    line-height: 1.6;
+  }
+
+  /* Terminal input */
+  .hero__terminal {
+    position: relative;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .hero__input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    overflow: hidden;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .hero__input-wrapper:focus-within {
+    border-color: var(--color-accent);
+  }
+
+  .hero__terminal--error .hero__input-wrapper {
+    border-color: var(--color-error);
+    animation: shake 0.3s ease;
+  }
+
+  .hero__input-icon {
+    display: flex;
+    align-items: center;
+    padding-left: var(--spacing-base);
+    color: var(--color-ink-faint);
+    flex-shrink: 0;
+  }
+
+  .hero__input {
+    flex: 1;
+    padding: var(--spacing-md) var(--spacing-md);
+    background: transparent;
+    border: none;
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-body-sm);
+    outline: none;
+  }
+  .hero__input::placeholder {
+    color: var(--color-ink-faint);
+  }
+
+  .hero__fetch-btn {
+    flex-shrink: 0;
+    margin: var(--spacing-xs);
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-weight: 600;
+  }
+  .hero__fetch-btn:disabled {
+    opacity: 0.5;
+  }
+
+  .hero__fetch-icon {
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+  .hero__fetch-btn:hover .hero__fetch-icon {
+    transform: translateX(2px);
+  }
+
+  /* Loading bar */
+  .hero__loading {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity var(--duration-fast);
+  }
+  .hero__loading--active {
+    opacity: 1;
+  }
+  .hero__loading-bar {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+    animation: loading-sweep 1.2s ease-in-out infinite;
+  }
+
+  /* Tags */
+  .hero__tags {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  /* Animations */
+  @keyframes loading-sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero {
+      padding-top: calc(var(--header-height) + var(--spacing-2xl));
+      padding-bottom: var(--spacing-2xl);
+    }
+
+    .hero__input-wrapper {
+      flex-direction: column;
+      border-radius: var(--radius-md);
+    }
+
+    .hero__input-icon {
+      display: none;
+    }
+
+    .hero__input {
+      width: 100%;
+      text-align: center;
+      padding: var(--spacing-md);
+    }
+
+    .hero__fetch-btn {
+      width: calc(100% - var(--spacing-sm));
+      margin: 0 var(--spacing-xs) var(--spacing-xs);
+      justify-content: center;
+    }
+  }
+</style>

@@ -1,0 +1,152 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import HistoryGrid from '../components/HistoryGrid.astro';
+import AuthModal from '../components/AuthModal.astro';
+---
+
+<Layout
+  title="History — TeraPlay"
+  description="Browse your past TeraBox link extractions. Filter by media type and re-stream any previous file."
+  currentPage="/history"
+>
+  <Header currentPage="/history" />
+
+  <main class="history-page">
+    <section class="history-page__hero">
+      <div class="container">
+        <p class="eyebrow">LINK HISTORY</p>
+        <h1 class="history-page__title">Your Extractions</h1>
+        <p class="history-page__subtitle">
+          Browse and re-stream any previously extracted TeraBox link. Filter by media type to find what you need.
+        </p>
+      </div>
+    </section>
+
+    <!-- Stats bar -->
+    <section class="history-page__stats">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-card card">
+            <span class="stat-card__value" id="stat-total">10</span>
+            <span class="stat-card__label eyebrow">Total Links</span>
+          </div>
+          <div class="stat-card card">
+            <span class="stat-card__value" id="stat-videos">5</span>
+            <span class="stat-card__label eyebrow">Videos</span>
+          </div>
+          <div class="stat-card card">
+            <span class="stat-card__value" id="stat-audio">3</span>
+            <span class="stat-card__label eyebrow">Audio</span>
+          </div>
+          <div class="stat-card card">
+            <span class="stat-card__value" id="stat-docs">2</span>
+            <span class="stat-card__label eyebrow">Documents</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <HistoryGrid />
+  </main>
+
+  <Footer />
+  <AuthModal />
+</Layout>
+
+<script>
+  import { MOCK_HISTORY } from '../stores/mockData';
+
+  function initStats() {
+    const total = MOCK_HISTORY.length;
+    const videos = MOCK_HISTORY.filter(r => r.media_type === 'video').length;
+    const audio = MOCK_HISTORY.filter(r => r.media_type === 'audio').length;
+    const docs = MOCK_HISTORY.filter(r => r.media_type === 'document').length;
+
+    const setEl = (id: string, val: number) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(val);
+    };
+
+    setEl('stat-total', total);
+    setEl('stat-videos', videos);
+    setEl('stat-audio', audio);
+    setEl('stat-docs', docs);
+  }
+
+  initStats();
+  document.addEventListener('astro:after-swap', initStats);
+</script>
+
+<style>
+  .history-page {
+    min-height: calc(100vh - var(--header-height));
+    display: flex;
+    flex-direction: column;
+  }
+
+  .history-page__hero {
+    padding-top: calc(var(--header-height) + var(--spacing-3xl));
+    padding-bottom: var(--spacing-2xl);
+    text-align: center;
+  }
+
+  .history-page__title {
+    font-size: var(--text-heading-1);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .history-page__subtitle {
+    font-size: var(--text-body);
+    color: var(--color-ink-muted);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Stats */
+  .history-page__stats {
+    padding-bottom: var(--spacing-xl);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-sm);
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: var(--spacing-lg) var(--spacing-base);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .stat-card__value {
+    font-size: var(--text-heading-1);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-card__label {
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,370 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AuthModal from '../components/AuthModal.astro';
+---
+
+<Layout
+  title="About — TeraPlay"
+  description="Learn how TeraPlay bypasses forced app blocks to stream and download TeraBox files directly in your browser."
+  currentPage="/about"
+>
+  <Header currentPage="/about" />
+
+  <main class="about">
+    <!-- Hero -->
+    <section class="about__hero">
+      <div class="container-narrow">
+        <p class="eyebrow">ABOUT TERAPLAY</p>
+        <h1 class="about__title">Built for Speed,<br/>Designed for Freedom</h1>
+        <p class="about__subtitle">
+          TeraPlay is a utility tool that cuts through forced app redirects, intrusive ads, and artificial download limits to give you direct access to your TeraBox files.
+        </p>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="about__section">
+      <div class="container-narrow">
+        <h2 class="about__section-title">How It Works</h2>
+        <p class="about__section-desc">Three extraction methods, zero compromises.</p>
+
+        <div class="methods">
+          <!-- Method 1 -->
+          <div class="method card">
+            <div class="method__header">
+              <span class="method__number mono">01</span>
+              <h3 class="method__title">Direct CDN Bypass</h3>
+            </div>
+            <p class="method__desc">
+              Auto-fetch mode resolves the direct CDN endpoint from any TeraBox share link. Bypasses the forced app download page and extracts the raw streaming URL.
+            </p>
+            <div class="method__tag">
+              <span class="badge badge--success">Auto</span>
+              <span class="badge">Fastest</span>
+            </div>
+          </div>
+
+          <!-- Method 2 -->
+          <div class="method card">
+            <div class="method__header">
+              <span class="method__number mono">02</span>
+              <h3 class="method__title">Cookie/Session Mirroring</h3>
+            </div>
+            <p class="method__desc">
+              Token gateway approach injects authorization headers via proxy tunnel, mirroring a valid session to access files that require authentication.
+            </p>
+            <div class="method__tag">
+              <span class="badge badge--warning">Auth Required</span>
+              <span class="badge">Secure</span>
+            </div>
+          </div>
+
+          <!-- Method 3 -->
+          <div class="method card">
+            <div class="method__header">
+              <span class="method__number mono">03</span>
+              <h3 class="method__title">Multi-Mirror Stream</h3>
+            </div>
+            <p class="method__desc">
+              Alternate stream selector connects to multiple CDN mirrors across regions. Switch sources without reloading for the best latency and reliability.
+            </p>
+            <div class="method__tag">
+              <span class="badge badge--info">Multi-Source</span>
+              <span class="badge">Redundant</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="about__section">
+      <div class="container-narrow">
+        <h2 class="about__section-title">Why TeraPlay</h2>
+        <p class="about__section-desc">Every feature designed to outperform alternatives.</p>
+
+        <div class="features-grid">
+          <div class="feature">
+            <div class="feature__icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2L2 7l8 5 8-5-8-5z" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M2 13l8 5 8-5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M2 10l8 5 8-5" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <h3 class="feature__title">Zero Ads</h3>
+            <p class="feature__desc">Absolute zero commercial clutter. No popups, no redirects, no tracking scripts.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature__icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M10 6v4l3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="feature__title">Instant Playback</h3>
+            <p class="feature__desc">Stream starts within seconds. No waiting for full downloads or app installations.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature__icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M7 10h6M10 7v6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="feature__title">Format Diversity</h3>
+            <p class="feature__desc">Support for MP4, MKV, AVI, MP3, FLAC, WAV, PDF, ZIP and more.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature__icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 14l4-4 3 3 7-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="feature__title">Adaptive Quality</h3>
+            <p class="feature__desc">Switch between 480p, 720p, and 1080p streams on the fly without rebuffering.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature__icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 10a5 5 0 0110 0" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M7 10a3 3 0 016 0" stroke="currentColor" stroke-width="1.2"/>
+                <circle cx="10" cy="10" r="1" fill="currentColor"/>
+                <path d="M10 11v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="feature__title">Mirror Network</h3>
+            <p class="feature__desc">Multiple CDN mirrors across Asia, Europe, and Americas for reliable global access.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature__icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M7 2v3M13 2v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                <path d="M3 9h14" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <h3 class="feature__title">Link History</h3>
+            <p class="feature__desc">All extractions saved automatically. Re-stream any previous file with one click.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech stack -->
+    <section class="about__section about__section--last">
+      <div class="container-narrow">
+        <h2 class="about__section-title">Tech Stack</h2>
+        <div class="stack-grid">
+          <div class="stack-item">
+            <span class="stack-item__name">Astro</span>
+            <span class="stack-item__desc mono">Frontend framework</span>
+          </div>
+          <div class="stack-item">
+            <span class="stack-item__name">Tailwind CSS v4</span>
+            <span class="stack-item__desc mono">Design system</span>
+          </div>
+          <div class="stack-item">
+            <span class="stack-item__name">TypeScript</span>
+            <span class="stack-item__desc mono">Type safety</span>
+          </div>
+          <div class="stack-item">
+            <span class="stack-item__name">Nano Stores</span>
+            <span class="stack-item__desc mono">State engine</span>
+          </div>
+          <div class="stack-item">
+            <span class="stack-item__name">Supabase</span>
+            <span class="stack-item__desc mono">Backend (Phase 2)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+  <AuthModal />
+</Layout>
+
+<style>
+  .about {
+    min-height: calc(100vh - var(--header-height));
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Hero */
+  .about__hero {
+    padding-top: calc(var(--header-height) + var(--spacing-3xl));
+    padding-bottom: var(--spacing-3xl);
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .about__title {
+    font-size: var(--text-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .about__subtitle {
+    font-size: var(--text-body-lg);
+    color: var(--color-ink-muted);
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Sections */
+  .about__section {
+    padding: var(--spacing-3xl) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .about__section--last {
+    border-bottom: none;
+  }
+
+  .about__section-title {
+    font-size: var(--text-heading-2);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--spacing-xs);
+  }
+  .about__section-desc {
+    color: var(--color-ink-muted);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  /* Methods */
+  .methods {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-base);
+  }
+
+  .method {
+    padding: var(--spacing-lg);
+  }
+
+  .method__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .method__number {
+    font-size: var(--text-heading-2);
+    font-weight: 700;
+    color: var(--color-ink-faint);
+    line-height: 1;
+  }
+
+  .method__title {
+    font-size: var(--text-heading-3);
+    font-weight: 600;
+  }
+
+  .method__desc {
+    color: var(--color-ink-muted);
+    font-size: var(--text-body-sm);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .method__tag {
+    display: flex;
+    gap: var(--spacing-xs);
+  }
+
+  /* Features */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-base);
+  }
+
+  .feature {
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .feature:hover {
+    border-color: var(--color-border-hover);
+  }
+
+  .feature__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-ink);
+  }
+
+  .feature__title {
+    font-size: var(--text-body);
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .feature__desc {
+    font-size: var(--text-body-sm);
+    color: var(--color-ink-muted);
+    line-height: 1.5;
+  }
+
+  /* Stack */
+  .stack-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .stack-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .stack-item__name {
+    font-size: var(--text-body-sm);
+    font-weight: 500;
+  }
+  .stack-item__desc {
+    font-size: var(--text-caption);
+    color: var(--color-ink-faint);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+    .stack-grid {
+      flex-direction: column;
+    }
+  }
+</style>
