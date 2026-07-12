@@ -79,7 +79,10 @@ const { currentPage = '/' } = Astro.props;
 </header>
 
 <script>
-  import { $user, openAuth, handleLogout } from '../stores/auth';
+  import { $user, openAuth, handleLogout, initAuthState } from '../stores/auth';
+
+  // Hydrate auth session from Supabase on page load
+  initAuthState();
 
   function initHeader() {
     const authButtons = document.getElementById('auth-buttons') as HTMLElement;
@@ -170,6 +173,11 @@ const { currentPage = '/' } = Astro.props;
   .nav-link:hover, .nav-link--active {
     font-weight: 480;
   }
+  .nav-link:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 4px;
+    border-radius: var(--radius-xs);
+  }
 
   /* Actions */
   .actions {
@@ -190,6 +198,11 @@ const { currentPage = '/' } = Astro.props;
     border: none;
     color: var(--color-ink);
     cursor: pointer;
+  }
+  .hamburger:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
   }
 
   /* Marquee Strip */
@@ -229,7 +242,7 @@ const { currentPage = '/' } = Astro.props;
     background-color: var(--color-canvas);
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--color-hairline);
-    box-shadow: 0 16px 32px rgba(0,0,0,0.1);
+    box-shadow: none; /* Design system: no drop shadows */
   }
 
   .mobile-menu--open {

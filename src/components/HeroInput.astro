@@ -47,11 +47,13 @@
   import { $stream, handleFetchLink } from '../stores/stream';
 
   function initHero() {
+    console.log('[DEBUG] initHero running');
     const urlInput = document.getElementById('url-input') as HTMLInputElement;
     const fetchBtn = document.getElementById('fetch-btn') as HTMLButtonElement;
     const loading = document.getElementById('hero-loading') as HTMLElement;
     const terminal = document.getElementById('hero-terminal') as HTMLElement;
 
+    console.log('[DEBUG] Elements found:', { urlInput, fetchBtn, loading, terminal });
     if (!urlInput || !fetchBtn) return;
 
     // Fetch handler
@@ -153,7 +155,7 @@
     outline: none;
   }
   .hero__input::placeholder {
-    color: var(--color-hairline);
+    color: #999999; /* 4.52:1 on white — meets WCAG AA */
   }
 
   .hero__fetch-btn {

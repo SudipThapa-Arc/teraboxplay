@@ -48,7 +48,7 @@ const historyRecords = MOCK_HISTORY;
               </td>
               <td class="history__td history__td--date text-caption">{new Date(record.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
               <td class="history__td history__td--action">
-                <button class="btn btn-secondary history__restream-btn" data-url={record.original_url} style="min-height: 32px; padding: 4px 12px; font-size: 14px;">
+                <button class="btn btn-secondary history__restream-btn" data-url={record.original_url}>
                   Re-stream
                 </button>
               </td>
@@ -190,6 +190,10 @@ const historyRecords = MOCK_HISTORY;
   .history__filter-btn--active {
     background-color: var(--color-inverse-ink);
     color: var(--color-ink);
+  }
+  .history__filter-btn:focus-visible {
+    outline: 2px solid var(--color-inverse-ink);
+    outline-offset: 2px;
   }
 
   /* Table */
@@ -333,5 +337,15 @@ const historyRecords = MOCK_HISTORY;
       flex-direction: column;
       align-items: flex-start;
     }
+  }
+
+  .history__restream-btn {
+    min-height: 32px;
+    padding: 4px 12px;
+    font-size: 14px;
+  }
+  .history__restream-btn:focus-visible {
+    outline: 2px solid var(--color-inverse-ink);
+    outline-offset: 2px;
   }
 </style>

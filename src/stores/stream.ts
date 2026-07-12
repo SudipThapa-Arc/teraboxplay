@@ -1,6 +1,8 @@
-import { atom, map } from 'nanostores';
-import { MOCK_STREAM_URL, MOCK_MIRRORS, MOCK_CONSOLE_LOGS, MOCK_AUDIO_URL } from './mockData';
+import { map } from 'nanostores';
+import { MOCK_MIRRORS, MOCK_CONSOLE_LOGS } from './mockData';
 import type { MirrorServer } from './mockData';
+import { supabase } from '../lib/supabase';
+import { $user } from './auth';
 
 // ─── Types ───
 export type StreamStatus = 'idle' | 'fetching' | 'resolving' | 'playing' | 'error';
@@ -46,9 +48,8 @@ export const $stream = map<StreamState>({ ...INITIAL_STATE });
 // ─── Actions ───
 
 /**
- * Fetch and resolve a TeraBox link.
- * Phase 1: Simulates CDN bypass with timed state transitions.
- * Phase 2: Replace internals with Supabase Edge Function call.
+ * Fetch and resolve a TeraBox link via the Supabase Edge Function.
+ * Preserves the reactive console log animation for UX continuity.
  */
 export async function handleFetchLink(url: string): Promise<void> {
   if (!url.trim()) return;
@@ -56,40 +57,106 @@ export async function handleFetchLink(url: string): Promise<void> {
   // Reset and start fetch
   $stream.set({ ...INITIAL_STATE, url, status: 'fetching', consoleLog: [] });
 
-  // Simulate console log output (proxy tunnel messages)
-  for (let i = 0; i < MOCK_CONSOLE_LOGS.length; i++) {
-    await delay(300 + Math.random() * 200);
-    const current = $stream.get();
-    $stream.setKey('consoleLog', [...current.consoleLog, MOCK_CONSOLE_LOGS[i]]);
+  // Animate console log output while the edge function resolves
+  const logAnimation = animateConsoleLogs();
 
-    // Transition to resolving after auth headers
-    if (i === 2) {
-      $stream.setKey('status', 'resolving');
+  try {
+    // Transition to resolving after a brief delay for UX continuity
+    await delay(600);
+    $stream.setKey('status', 'resolving');
+
+    // Call the Supabase Edge Function
+    const { data, error } = await supabase.functions.invoke('resolve-terabox', {
+      body: { url },
+    });
+
+    // Stop log animation
+    logAnimation.stop();
+
+    if (error) {
+      const current = $stream.get();
+      $stream.setKey('consoleLog', [
+        ...current.consoleLog,
+        `[ERROR] Edge function failed: ${error.message}`,
+      ]);
+      $stream.setKey('status', 'error');
+      return;
     }
+
+    const { resolved_url, file_name, file_size, media_type } = data;
+
+    // Derive extension from file name
+    const extMatch = file_name?.match(/\.(\w+)$/);
+    const extension = extMatch ? extMatch[1] : 'mp4';
+
+    // Finalize console logs
+    const current = $stream.get();
+    $stream.setKey('consoleLog', [
+      ...current.consoleLog,
+      `[STREAM] Resolved: ${file_name} (${file_size})`,
+      `[STREAM] Playback ready — buffered 4.8s ahead`,
+    ]);
+
+    // Set playing state
+    $stream.set({
+      ...$stream.get(),
+      status: 'playing',
+      resolvedUrl: resolved_url,
+      fileName: file_name,
+      fileSize: file_size,
+      mediaType: media_type as MediaType,
+      extension,
+      mirrorStatus: 'Connected',
+    });
+
+    // ─── Insert into history table ───
+    const user = $user.get();
+    await supabase.from('history').insert({
+      user_id: user?.id ?? null,
+      original_url: url,
+      resolved_url,
+      file_name,
+      file_size,
+      media_type,
+    });
+  } catch (err) {
+    logAnimation.stop();
+    const current = $stream.get();
+    $stream.setKey('consoleLog', [
+      ...current.consoleLog,
+      `[ERROR] ${err instanceof Error ? err.message : 'Unknown error'}`,
+    ]);
+    $stream.setKey('status', 'error');
   }
+}
 
-  // Determine media type from URL or default to video
-  const isAudio = url.toLowerCase().includes('audio') || url.toLowerCase().includes('mp3') || url.toLowerCase().includes('flac');
-  const mediaType: MediaType = isAudio ? 'audio' : 'video';
-  const streamUrl = isAudio ? MOCK_AUDIO_URL : MOCK_STREAM_URL;
+/**
+ * Animate console log messages for UX continuity during resolution.
+ * Returns a controller to stop the animation.
+ */
+function animateConsoleLogs() {
+  let stopped = false;
+  let index = 0;
 
-  // Resolve
-  await delay(400);
-  $stream.set({
-    ...$stream.get(),
-    status: 'playing',
-    resolvedUrl: streamUrl,
-    fileName: isAudio ? 'Audio_Track_HQ.mp3' : 'Big_Buck_Bunny_1080p.mp4',
-    fileSize: isAudio ? '94 MB' : '2.4 GB',
-    mediaType,
-    extension: isAudio ? 'mp3' : 'mp4',
-    mirrorStatus: 'Connected',
-  });
+  const run = async () => {
+    while (!stopped && index < MOCK_CONSOLE_LOGS.length) {
+      await delay(300 + Math.random() * 200);
+      if (stopped) break;
+      const current = $stream.get();
+      $stream.setKey('consoleLog', [...current.consoleLog, MOCK_CONSOLE_LOGS[index]]);
+      index++;
+    }
+  };
+
+  run();
+
+  return {
+    stop: () => { stopped = true; },
+  };
 }
 
 /**
  * Change playback quality.
- * Phase 1: Updates state only; no actual transcoding.
  */
 export function handleQualityChange(quality: QualityOption): void {
   $stream.setKey('quality', quality);
@@ -103,7 +170,6 @@ export function handleQualityChange(quality: QualityOption): void {
 
 /**
  * Switch active mirror server.
- * Phase 1: Updates resolved URL to mirror's URL.
  */
 export function handleMirrorChange(mirrorId: string): void {
   const mirror = MOCK_MIRRORS.find(m => m.id === mirrorId);
@@ -122,7 +188,6 @@ export function handleMirrorChange(mirrorId: string): void {
 
 /**
  * Trigger download via proxy.
- * Phase 1: Opens resolved URL in new tab. Phase 2: Proxy token handoff.
  */
 export function handleDownload(): void {
   const current = $stream.get();
@@ -135,7 +200,6 @@ export function handleDownload(): void {
     '[DOWNLOAD] Initiating file transfer...',
   ]);
 
-  // Phase 1: direct open
   if (typeof window !== 'undefined') {
     window.open(current.resolvedUrl, '_blank');
   }

@@ -38,19 +38,20 @@ import MetadataCard from './MetadataCard.astro';
 
 <style>
   .workspace {
-    max-height: 0;
-    overflow: hidden;
+    display: grid;
+    grid-template-rows: 0fr;
     opacity: 0;
-    padding-block: 0;
+    transition: grid-template-rows var(--duration-slow) var(--ease-out),
+                opacity var(--duration-normal) var(--ease-out);
     margin-bottom: 0;
-    transition: max-height var(--duration-slow) var(--ease-out),
-                opacity var(--duration-normal) var(--ease-out),
-                padding var(--duration-slow) var(--ease-out),
-                margin var(--duration-slow) var(--ease-out);
+  }
+
+  .workspace > * {
+    overflow: hidden;
   }
 
   .workspace--visible {
-    max-height: 1200px;
+    grid-template-rows: 1fr;
     opacity: 1;
     padding-block: var(--spacing-xxl);
     margin-bottom: var(--spacing-section);

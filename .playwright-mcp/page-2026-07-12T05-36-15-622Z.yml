@@ -1,0 +1,210 @@
+- generic [active] [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - generic [ref=f5e4]:
+      - link "TeraPlay Home" [ref=f5e5] [cursor=pointer]:
+        - /url: /
+        - text: TERAPLAY
+      - navigation "Main navigation" [ref=f5e6]:
+        - link "Home" [ref=f5e7] [cursor=pointer]:
+          - /url: /
+        - link "History" [ref=f5e8] [cursor=pointer]:
+          - /url: /history
+        - link "About" [ref=f5e9] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=f5e11]:
+        - button "Log in" [ref=f5e12] [cursor=pointer]
+        - button "Get started for free" [ref=f5e13] [cursor=pointer]
+    - generic [ref=f5e15]:
+      - generic [ref=f5e16]: TERAPLAY ALPHA
+      - generic [ref=f5e17]: •
+      - generic [ref=f5e18]: FETCH LINKS INSTANTLY
+      - generic [ref=f5e19]: •
+      - generic [ref=f5e20]: NO FORCED APP DOWNLOADS
+      - generic [ref=f5e21]: •
+      - generic [ref=f5e22]: DIRECT STREAMING
+      - generic [ref=f5e23]: •
+      - generic [ref=f5e24]: SECURE PARSING
+      - generic [ref=f5e25]: •
+      - generic [ref=f5e26]: TERAPLAY ALPHA
+      - generic [ref=f5e27]: •
+      - generic [ref=f5e28]: FETCH LINKS INSTANTLY
+      - generic [ref=f5e29]: •
+      - generic [ref=f5e30]: NO FORCED APP DOWNLOADS
+  - main [ref=f5e31]:
+    - generic [ref=f5e33]:
+      - paragraph [ref=f5e34]: TERABOX LINK EXTRACTOR
+      - heading "Stream & Download Without Limits" [level=1] [ref=f5e35]: Stream & DownloadWithout Limits
+      - paragraph [ref=f5e36]: Bypass forced app blocks. Paste any TeraBox link and get instant direct streaming or download — no ads, no redirects.
+      - generic [ref=f5e38]:
+        - textbox "TeraBox URL" [ref=f5e39]:
+          - /placeholder: https://terabox.com/s/your-link-here
+        - button "Fetch & Stream" [ref=f5e40] [cursor=pointer]
+    - region "Media workspace" [ref=f5e43]:
+      - generic:
+        - generic [ref=f5e45]:
+          - generic [ref=f5e46]:
+            - generic [ref=f5e47]: Your browser does not support the video tag.
+            - button "Play" [ref=f5e49] [cursor=pointer]
+            - paragraph [ref=f5e57]: Paste a link above to start streaming
+          - generic [ref=f5e58]:
+            - generic [ref=f5e59]: Proxy Console
+            - paragraph [ref=f5e62]: "[READY] Waiting for input..."
+        - generic [ref=f5e64]:
+          - generic [ref=f5e65]:
+            - heading "File Details" [level=3] [ref=f5e66]
+            - generic [ref=f5e67]:
+              - generic [ref=f5e68]:
+                - generic [ref=f5e69]: File Name
+                - generic [ref=f5e70]: —
+              - generic [ref=f5e71]:
+                - generic [ref=f5e72]: Size
+                - generic [ref=f5e73]: —
+              - generic [ref=f5e74]:
+                - generic [ref=f5e75]: Type
+                - generic [ref=f5e76]: —
+              - generic [ref=f5e78]:
+                - generic [ref=f5e79]: Extension
+                - generic [ref=f5e80]: —
+              - generic [ref=f5e82]:
+                - generic [ref=f5e83]: Mirror
+                - generic [ref=f5e84]: Disconnected
+          - generic [ref=f5e87]:
+            - heading "Quality" [level=3] [ref=f5e88]
+            - generic [ref=f5e89]:
+              - button "480p" [ref=f5e90] [cursor=pointer]
+              - button "720p" [ref=f5e91] [cursor=pointer]
+              - button "1080p" [ref=f5e92] [cursor=pointer]
+          - generic [ref=f5e93]:
+            - heading "Stream Mirror" [level=3] [ref=f5e94]
+            - combobox [ref=f5e95] [cursor=pointer]:
+              - option "Select mirror..." [selected]
+          - button "Download File" [disabled] [ref=f5e97]
+    - generic [ref=f5e101]:
+      - generic [ref=f5e102]:
+        - generic [ref=f5e103]:
+          - heading "Recent Links" [level=2] [ref=f5e104]
+          - generic [ref=f5e105]: 10 records
+        - generic [ref=f5e106]:
+          - button "All" [ref=f5e107] [cursor=pointer]
+          - button "Videos" [ref=f5e108] [cursor=pointer]
+          - button "Audio" [ref=f5e109] [cursor=pointer]
+          - button "Docs" [ref=f5e110] [cursor=pointer]
+      - table [ref=f5e112]:
+        - rowgroup [ref=f5e113]:
+          - row [ref=f5e114]:
+            - columnheader "File Name" [ref=f5e115]
+            - columnheader "Size" [ref=f5e116]
+            - columnheader "Type" [ref=f5e117]
+            - columnheader "Date" [ref=f5e118]
+            - columnheader "Action" [ref=f5e119]
+        - rowgroup [ref=f5e120]:
+          - row [ref=f5e121]:
+            - cell "Project_Presentation_Final.mp4" [ref=f5e122]
+            - cell "2.4 GB" [ref=f5e124]
+            - cell "video" [ref=f5e125]
+            - cell "Jul 4" [ref=f5e127]
+            - cell [ref=f5e128]:
+              - button "Re-stream" [ref=f5e129] [cursor=pointer]
+          - row [ref=f5e130]:
+            - cell "Documentary_4K_Remaster.mkv" [ref=f5e131]
+            - cell "8.1 GB" [ref=f5e133]
+            - cell "video" [ref=f5e134]
+            - cell "Jul 3" [ref=f5e136]
+            - cell [ref=f5e137]:
+              - button "Re-stream" [ref=f5e138] [cursor=pointer]
+          - row [ref=f5e139]:
+            - cell "Podcast_Episode_147.mp3" [ref=f5e140]
+            - cell "94 MB" [ref=f5e142]
+            - cell "audio" [ref=f5e143]
+            - cell "Jul 3" [ref=f5e145]
+            - cell [ref=f5e146]:
+              - button "Re-stream" [ref=f5e147] [cursor=pointer]
+          - row [ref=f5e148]:
+            - cell "Tutorial_React_Hooks.mp4" [ref=f5e149]
+            - cell "1.7 GB" [ref=f5e151]
+            - cell "video" [ref=f5e152]
+            - cell "Jul 3" [ref=f5e154]
+            - cell [ref=f5e155]:
+              - button "Re-stream" [ref=f5e156] [cursor=pointer]
+          - row [ref=f5e157]:
+            - cell "Album_Midnight_Sessions.flac" [ref=f5e158]
+            - cell "340 MB" [ref=f5e160]
+            - cell "audio" [ref=f5e161]
+            - cell "Jul 2" [ref=f5e163]
+            - cell [ref=f5e164]:
+              - button "Re-stream" [ref=f5e165] [cursor=pointer]
+          - row [ref=f5e166]:
+            - cell "Research_Paper_AI_2026.pdf" [ref=f5e167]
+            - cell "12 MB" [ref=f5e169]
+            - cell "document" [ref=f5e170]
+            - cell "Jul 1" [ref=f5e172]
+            - cell [ref=f5e173]:
+              - button "Re-stream" [ref=f5e174] [cursor=pointer]
+          - row [ref=f5e175]:
+            - cell "Gaming_Highlights_June.mp4" [ref=f5e176]
+            - cell "4.2 GB" [ref=f5e178]
+            - cell "video" [ref=f5e179]
+            - cell "Jul 1" [ref=f5e181]
+            - cell [ref=f5e182]:
+              - button "Re-stream" [ref=f5e183] [cursor=pointer]
+          - row [ref=f5e184]:
+            - cell "Sound_Effects_Pack_v3.wav" [ref=f5e185]
+            - cell "580 MB" [ref=f5e187]
+            - cell "audio" [ref=f5e188]
+            - cell "Jun 30" [ref=f5e190]
+            - cell [ref=f5e191]:
+              - button "Re-stream" [ref=f5e192] [cursor=pointer]
+          - row [ref=f5e193]:
+            - cell "Vintage_Film_Scan_1978.avi" [ref=f5e194]
+            - cell "6.8 GB" [ref=f5e196]
+            - cell "video" [ref=f5e197]
+            - cell "Jun 29" [ref=f5e199]
+            - cell [ref=f5e200]:
+              - button "Re-stream" [ref=f5e201] [cursor=pointer]
+          - row [ref=f5e202]:
+            - cell "Design_Assets_Bundle.zip" [ref=f5e203]
+            - cell "1.1 GB" [ref=f5e205]
+            - cell "document" [ref=f5e206]
+            - cell "Jun 29" [ref=f5e208]
+            - cell [ref=f5e209]:
+              - button "Re-stream" [ref=f5e210] [cursor=pointer]
+  - contentinfo [ref=f5e211]:
+    - generic [ref=f5e212]:
+      - generic [ref=f5e213]:
+        - generic [ref=f5e214]:
+          - text: TERA
+          - strong [ref=f5e215]: PLAY
+        - generic [ref=f5e216]: © 2026 TeraPlay. All rights reserved.
+      - navigation "Footer navigation" [ref=f5e217]:
+        - link "About" [ref=f5e218] [cursor=pointer]:
+          - /url: /about
+        - generic [ref=f5e219]: ·
+        - link "GitHub" [ref=f5e220] [cursor=pointer]:
+          - /url: https://github.com
+        - generic [ref=f5e221]: ·
+        - link "Privacy" [ref=f5e222] [cursor=pointer]:
+          - /url: /about
+        - generic [ref=f5e223]: ·
+        - link "Terms" [ref=f5e224] [cursor=pointer]:
+          - /url: /about
+  - generic:
+    - dialog:
+      - button
+      - generic:
+        - heading [level=2]: TERAPLAY
+      - heading [level=2]: Sign In
+      - paragraph: Enter your credentials to continue
+      - generic:
+        - generic:
+          - generic: Email
+          - textbox:
+            - /placeholder: you@example.com
+        - generic:
+          - generic: Password
+          - textbox:
+            - /placeholder: ••••••••
+        - button:
+          - generic: Sign In
+      - paragraph:
+        - text: Don't have an account?
+        - button: Sign Up

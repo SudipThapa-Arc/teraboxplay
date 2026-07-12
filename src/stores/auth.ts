@@ -1,4 +1,5 @@
 import { atom } from 'nanostores';
+import { supabase } from '../lib/supabase';
 
 // ─── Types ───
 export type AuthModalState = 'closed' | 'login' | 'signup';
@@ -13,6 +14,28 @@ export const $authModal = atom<AuthModalState>('closed');
 export const $user = atom<User | null>(null);
 export const $authError = atom<string>('');
 export const $authLoading = atom<boolean>(false);
+
+// ─── Session Hydration ───
+
+/**
+ * Initialize auth state from active Supabase session.
+ * Call once on app load to hydrate the user store.
+ */
+export async function initAuthState(): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) {
+    $user.set({ id: session.user.id, email: session.user.email ?? '' });
+  }
+
+  // Listen for auth state changes (login, logout, token refresh)
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if (session?.user) {
+      $user.set({ id: session.user.id, email: session.user.email ?? '' });
+    } else {
+      $user.set(null);
+    }
+  });
+}
 
 // ─── Actions ───
 
@@ -43,19 +66,13 @@ export function toggleAuthView(): void {
 }
 
 /**
- * Handle login.
- * Phase 1: Mock success with demo user.
- * Phase 2: Replace with Supabase auth.signInWithPassword()
+ * Handle login via Supabase auth.signInWithPassword().
  */
 export async function handleLogin(email: string, password: string): Promise<void> {
   $authLoading.set(true);
   $authError.set('');
 
   try {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // Phase 1: Accept any non-empty credentials
     if (!email.trim() || !password.trim()) {
       $authError.set('Please enter both email and password.');
       return;
@@ -66,8 +83,17 @@ export async function handleLogin(email: string, password: string): Promise<void
       return;
     }
 
-    // Mock success
-    $user.set({ id: 'u-demo', email: email.trim() });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      $authError.set(error.message);
+      return;
+    }
+
+    // onAuthStateChange will hydrate $user
     $authModal.set('closed');
   } finally {
     $authLoading.set(false);
@@ -75,17 +101,13 @@ export async function handleLogin(email: string, password: string): Promise<void
 }
 
 /**
- * Handle signup.
- * Phase 1: Mock success.
- * Phase 2: Replace with Supabase auth.signUp()
+ * Handle signup via Supabase auth.signUp().
  */
 export async function handleSignup(email: string, password: string, confirmPassword: string): Promise<void> {
   $authLoading.set(true);
   $authError.set('');
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     if (!email.trim() || !password.trim()) {
       $authError.set('Please fill in all fields.');
       return;
@@ -101,8 +123,17 @@ export async function handleSignup(email: string, password: string, confirmPassw
       return;
     }
 
-    // Mock success
-    $user.set({ id: 'u-demo', email: email.trim() });
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      $authError.set(error.message);
+      return;
+    }
+
+    // onAuthStateChange will hydrate $user
     $authModal.set('closed');
   } finally {
     $authLoading.set(false);
@@ -110,9 +141,9 @@ export async function handleSignup(email: string, password: string, confirmPassw
 }
 
 /**
- * Handle logout.
- * Phase 2: Replace with Supabase auth.signOut()
+ * Handle logout via Supabase auth.signOut().
  */
-export function handleLogout(): void {
+export async function handleLogout(): Promise<void> {
+  await supabase.auth.signOut();
   $user.set(null);
 }
