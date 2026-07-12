@@ -6,87 +6,87 @@ interface Props {
 const { currentPage = '/' } = Astro.props;
 ---
 
-<header class="header" id="site-header">
-  <div class="header__inner container">
-    <!-- Logo -->
-    <a href="/" class="header__logo" aria-label="TeraPlay Home">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-        <rect x="1" y="1" width="26" height="26" rx="6" stroke="currentColor" stroke-width="1.5" fill="none"/>
-        <path d="M8 10h12M14 10v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span class="header__wordmark">TERA<strong>PLAY</strong></span>
-    </a>
+<header class="header-wrapper">
+  <!-- Top Nav -->
+  <div class="top-nav">
+    <div class="top-nav__inner">
+      <!-- Logo Wordmark -->
+      <a href="/" class="logo" aria-label="TeraPlay Home">
+        TERAPLAY
+      </a>
 
-    <!-- Navigation (desktop) -->
-    <nav class="header__nav" id="main-nav" aria-label="Main navigation">
-      <a href="/" class:list={["header__link", { "header__link--active": currentPage === '/' }]}>Home</a>
-      <a href="/history" class:list={["header__link", { "header__link--active": currentPage === '/history' }]}>History</a>
-      <a href="/about" class:list={["header__link", { "header__link--active": currentPage === '/about' }]}>About</a>
-    </nav>
+      <!-- Desktop Nav Links -->
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="/" class:list={["nav-link", { "nav-link--active": currentPage === '/' }]}>Home</a>
+        <a href="/history" class:list={["nav-link", { "nav-link--active": currentPage === '/history' }]}>History</a>
+        <a href="/about" class:list={["nav-link", { "nav-link--active": currentPage === '/about' }]}>About</a>
+      </nav>
 
-    <!-- Status + Auth -->
-    <div class="header__actions">
-      <!-- Stream status indicator -->
-      <div class="header__status" id="stream-status-badge" style="display: none;">
-        <span class="header__status-dot"></span>
-        <span class="header__status-text">Streaming</span>
+      <!-- Actions -->
+      <div class="actions">
+        <!-- User not logged in -->
+        <div class="auth-buttons" id="auth-buttons">
+          <button class="btn btn-secondary" id="btn-sign-in">Log in</button>
+          <button class="btn btn-primary" id="btn-sign-up">Get started for free</button>
+        </div>
+        
+        <!-- User logged in -->
+        <div class="user-display" id="user-display" style="display: none;">
+          <span class="user-email text-caption" id="user-email"></span>
+          <button class="btn btn-secondary" id="btn-logout">Log Out</button>
+        </div>
+
+        <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
       </div>
+    </div>
+  </div>
 
-      <!-- Auth buttons -->
-      <div class="header__auth" id="auth-buttons">
-        <button class="btn btn-ghost btn-sm" id="btn-sign-in">Sign In</button>
-        <button class="btn btn-secondary btn-sm" id="btn-sign-up">Sign Up</button>
-      </div>
-
-      <!-- User display (hidden until logged in) -->
-      <div class="header__user" id="user-display" style="display: none;">
-        <span class="header__user-email" id="user-email"></span>
-        <button class="btn btn-ghost btn-sm" id="btn-logout">Log Out</button>
-      </div>
-
-      <!-- Mobile menu toggle -->
-      <button class="header__hamburger" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <line x1="3" y1="5" x2="17" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="3" y1="15" x2="17" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
+  <!-- Marquee Strip -->
+  <div class="marquee-strip">
+    <div class="marquee-content text-caption">
+      <span>TERAPLAY ALPHA</span>
+      <span class="dot">•</span>
+      <span>FETCH LINKS INSTANTLY</span>
+      <span class="dot">•</span>
+      <span>NO FORCED APP DOWNLOADS</span>
+      <span class="dot">•</span>
+      <span>DIRECT STREAMING</span>
+      <span class="dot">•</span>
+      <span>SECURE PARSING</span>
+      <span class="dot">•</span>
+      <span>TERAPLAY ALPHA</span>
+      <span class="dot">•</span>
+      <span>FETCH LINKS INSTANTLY</span>
+      <span class="dot">•</span>
+      <span>NO FORCED APP DOWNLOADS</span>
     </div>
   </div>
 
   <!-- Mobile menu overlay -->
-  <div class="header__mobile-menu" id="mobile-menu" aria-hidden="true">
-    <nav class="header__mobile-nav">
-      <a href="/" class:list={["header__mobile-link", { "header__mobile-link--active": currentPage === '/' }]}>Home</a>
-      <a href="/history" class:list={["header__mobile-link", { "header__mobile-link--active": currentPage === '/history' }]}>History</a>
-      <a href="/about" class:list={["header__mobile-link", { "header__mobile-link--active": currentPage === '/about' }]}>About</a>
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <nav class="mobile-nav">
+      <a href="/" class:list={["mobile-link", { "mobile-link--active": currentPage === '/' }]}>Home</a>
+      <a href="/history" class:list={["mobile-link", { "mobile-link--active": currentPage === '/history' }]}>History</a>
+      <a href="/about" class:list={["mobile-link", { "mobile-link--active": currentPage === '/about' }]}>About</a>
     </nav>
   </div>
 </header>
 
 <script>
-  import { $stream } from '../stores/stream';
-  import { $user, $authModal, openAuth, handleLogout } from '../stores/auth';
+  import { $user, openAuth, handleLogout } from '../stores/auth';
 
   function initHeader() {
-    const statusBadge = document.getElementById('stream-status-badge') as HTMLElement;
     const authButtons = document.getElementById('auth-buttons') as HTMLElement;
     const userDisplay = document.getElementById('user-display') as HTMLElement;
     const userEmail = document.getElementById('user-email') as HTMLElement;
     const hamburgerBtn = document.getElementById('hamburger-btn') as HTMLElement;
     const mobileMenu = document.getElementById('mobile-menu') as HTMLElement;
-
-    // Stream status badge
-    $stream.subscribe(state => {
-      if (state.status === 'playing' || state.status === 'fetching' || state.status === 'resolving') {
-        statusBadge.style.display = 'flex';
-        const textEl = statusBadge.querySelector('.header__status-text');
-        if (textEl) textEl.textContent = state.status === 'playing' ? 'Streaming' : 'Connecting...';
-      } else {
-        statusBadge.style.display = 'none';
-      }
-    });
 
     // Auth state
     $user.subscribe(user => {
@@ -110,197 +110,155 @@ const { currentPage = '/' } = Astro.props;
       const isOpen = mobileMenu.getAttribute('aria-hidden') === 'false';
       mobileMenu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
       hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-      mobileMenu.classList.toggle('header__mobile-menu--open', !isOpen);
+      mobileMenu.classList.toggle('mobile-menu--open', !isOpen);
     });
   }
 
-  // Run on page load and view transitions
   initHeader();
   document.addEventListener('astro:after-swap', initHeader);
 </script>
 
 <style>
-  .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--header-height);
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--color-border);
-    z-index: var(--z-sticky);
+  .header-wrapper {
+    position: relative;
+    z-index: 100;
   }
 
-  .header__inner {
+  /* Top Nav */
+  .top-nav {
+    height: 56px;
+    background-color: var(--color-canvas);
+    border-bottom: 1px solid var(--color-hairline);
+    display: flex;
+    align-items: center;
+    padding-inline: var(--spacing-lg);
+  }
+
+  .top-nav__inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 100%;
-    gap: var(--spacing-lg);
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    gap: var(--spacing-xl);
   }
 
-  /* Logo */
-  .header__logo {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+  /* Logo Wordmark */
+  .logo {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
     color: var(--color-ink);
-    text-decoration: none;
     flex-shrink: 0;
   }
-  .header__logo:hover {
-    color: var(--color-accent);
-  }
-  .header__wordmark {
-    font-size: var(--text-body-sm);
-    font-weight: 400;
-    letter-spacing: 0.12em;
-    font-family: var(--font-mono);
-  }
-  .header__wordmark strong {
-    font-weight: 700;
-  }
 
-  /* Navigation */
-  .header__nav {
+  /* Desktop Nav Links */
+  .nav-links {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-xl);
+    flex: 1;
   }
-  .header__link {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--text-body-sm);
-    color: var(--color-ink-muted);
-    border-radius: var(--radius-md);
-    transition: all var(--duration-fast) var(--ease-out);
-  }
-  .header__link:hover {
+
+  .nav-link {
+    font-size: 16px;
+    font-weight: 330;
     color: var(--color-ink);
-    background-color: var(--color-surface);
   }
-  .header__link--active {
-    color: var(--color-ink);
+
+  .nav-link:hover, .nav-link--active {
+    font-weight: 480;
   }
 
   /* Actions */
-  .header__actions {
+  .actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    flex-shrink: 0;
+    gap: var(--spacing-md);
   }
 
-  /* Status badge */
-  .header__status {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border: 1px solid var(--color-success-muted);
-    border-radius: var(--radius-pill);
-    background-color: var(--color-success-muted);
-  }
-  .header__status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: var(--color-success);
-    animation: pulse-dot 2s ease-in-out infinite;
-  }
-  .header__status-text {
-    font-size: var(--text-micro);
-    font-family: var(--font-mono);
-    color: var(--color-success);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  /* Auth */
-  .header__auth {
+  .auth-buttons, .user-display {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
   }
-  .header__user {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-  }
-  .header__user-email {
-    font-size: var(--text-caption);
-    color: var(--color-ink-muted);
-    font-family: var(--font-mono);
-  }
 
-  /* Hamburger */
-  .header__hamburger {
+  .hamburger {
     display: none;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
     background: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border: none;
     color: var(--color-ink);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
   }
-  .header__hamburger:hover {
-    background-color: var(--color-surface);
-    border-color: var(--color-border-hover);
+
+  /* Marquee Strip */
+  .marquee-strip {
+    height: 36px;
+    background-color: var(--color-inverse-canvas);
+    color: var(--color-inverse-ink);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .marquee-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    animation: marquee 20s linear infinite;
+  }
+
+  .dot {
+    opacity: 0.5;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 
   /* Mobile menu */
-  .header__mobile-menu {
+  .mobile-menu {
     display: none;
-    position: fixed;
-    top: var(--header-height);
+    position: absolute;
+    top: 56px;
     left: 0;
     right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(12px);
+    background-color: var(--color-canvas);
     padding: var(--spacing-lg);
-    z-index: calc(var(--z-sticky) - 1);
+    border-bottom: 1px solid var(--color-hairline);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.1);
   }
-  .header__mobile-menu--open {
+
+  .mobile-menu--open {
     display: block;
   }
-  .header__mobile-nav {
+
+  .mobile-nav {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-lg);
   }
-  .header__mobile-link {
-    display: block;
-    padding: var(--spacing-md) var(--spacing-base);
-    font-size: var(--text-body-lg);
-    color: var(--color-ink-muted);
-    border-radius: var(--radius-md);
-    transition: all var(--duration-fast) var(--ease-out);
-  }
-  .header__mobile-link:hover,
-  .header__mobile-link--active {
+
+  .mobile-link {
+    font-size: 20px;
+    font-weight: 330;
     color: var(--color-ink);
-    background-color: var(--color-surface);
+    padding-block: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-hairline-soft);
   }
 
   /* Responsive */
-  @media (max-width: 768px) {
-    .header__nav {
-      display: none;
-    }
-    .header__auth {
-      display: none;
-    }
-    .header__user {
-      display: none;
-    }
-    .header__hamburger {
-      display: flex;
+  @media (max-width: 960px) {
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+  }
+
+  @media (max-width: 560px) {
+    .auth-buttons {
+      display: none; /* Hide pills on mobile header, maybe move to mobile menu */
     }
   }
 </style>

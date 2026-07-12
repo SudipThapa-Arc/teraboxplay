@@ -1,11 +1,10 @@
 ---
-// MediaWorkspace — Split panel: Player (65%) + Metadata (35%)
 import MediaPlayer from './MediaPlayer.astro';
 import MetadataCard from './MetadataCard.astro';
 ---
 
-<section class="workspace" id="media-workspace" aria-label="Media workspace">
-  <div class="workspace__inner container">
+<section class="color-block color-block-lilac workspace" id="media-workspace" aria-label="Media workspace">
+  <div class="workspace__inner">
     <div class="workspace__panel workspace__panel--player">
       <MediaPlayer />
     </div>
@@ -42,30 +41,28 @@ import MetadataCard from './MetadataCard.astro';
     max-height: 0;
     overflow: hidden;
     opacity: 0;
+    padding-block: 0;
+    margin-bottom: 0;
     transition: max-height var(--duration-slow) var(--ease-out),
                 opacity var(--duration-normal) var(--ease-out),
+                padding var(--duration-slow) var(--ease-out),
                 margin var(--duration-slow) var(--ease-out);
-    margin-bottom: 0;
   }
 
   .workspace--visible {
     max-height: 1200px;
     opacity: 1;
-    margin-bottom: var(--spacing-3xl);
+    padding-block: var(--spacing-xxl);
+    margin-bottom: var(--spacing-section);
   }
 
   .workspace__inner {
     display: grid;
     grid-template-columns: 65fr 35fr;
-    gap: var(--spacing-base);
-    padding-top: var(--spacing-xl);
-    padding-bottom: var(--spacing-xl);
+    gap: var(--spacing-xl);
   }
 
-  .workspace__panel--player {
-    min-width: 0;
-  }
-
+  .workspace__panel--player,
   .workspace__panel--meta {
     min-width: 0;
   }
