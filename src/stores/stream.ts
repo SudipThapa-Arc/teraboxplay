@@ -12,7 +12,12 @@ export type QualityOption = '480p' | '720p' | '1080p';
 export interface StreamState {
   status: StreamStatus;
   url: string;
+  /** Raw resolved URL from edge function (may be a proxy path or direct URL) */
   resolvedUrl: string;
+  /** Proxy URL to point the player at — always goes through our edge function */
+  proxyUrl: string;
+  /** True when resolvedUrl is an HLS .m3u8 manifest */
+  isHls: boolean;
   fileName: string;
   fileSize: string;
   mediaType: MediaType;
@@ -30,6 +35,8 @@ const INITIAL_STATE: StreamState = {
   status: 'idle',
   url: '',
   resolvedUrl: '',
+  proxyUrl: '',
+  isHls: false,
   fileName: '',
   fileSize: '',
   mediaType: 'video',
@@ -83,7 +90,7 @@ export async function handleFetchLink(url: string): Promise<void> {
       return;
     }
 
-    const { resolved_url, file_name, file_size, media_type } = data;
+    const { resolved_url, stream_proxy_url, is_hls, file_name, file_size, media_type } = data;
 
     // Derive extension from file name
     const extMatch = file_name?.match(/\.(\w+)$/);
@@ -94,7 +101,7 @@ export async function handleFetchLink(url: string): Promise<void> {
     $stream.setKey('consoleLog', [
       ...current.consoleLog,
       `[STREAM] Resolved: ${file_name} (${file_size})`,
-      `[STREAM] Playback ready — buffered 4.8s ahead`,
+      is_hls ? '[HLS] Manifest detected — initialising hls.js...' : '[STREAM] Playback ready — buffered 4.8s ahead',
     ]);
 
     // Set playing state
@@ -102,6 +109,8 @@ export async function handleFetchLink(url: string): Promise<void> {
       ...$stream.get(),
       status: 'playing',
       resolvedUrl: resolved_url,
+      proxyUrl: stream_proxy_url ?? resolved_url,
+      isHls: Boolean(is_hls),
       fileName: file_name,
       fileSize: file_size,
       mediaType: media_type as MediaType,
@@ -191,17 +200,18 @@ export function handleMirrorChange(mirrorId: string): void {
  */
 export function handleDownload(): void {
   const current = $stream.get();
-  if (!current.resolvedUrl) return;
+  const target = current.proxyUrl || current.resolvedUrl;
+  if (!target) return;
 
   $stream.setKey('consoleLog', [
     ...current.consoleLog,
     '[DOWNLOAD] Generating proxy download token...',
     '[DOWNLOAD] Token: tk_' + Math.random().toString(36).substring(2, 10),
-    '[DOWNLOAD] Initiating file transfer...',
+    '[DOWNLOAD] Initiating file transfer via proxy...',
   ]);
 
   if (typeof window !== 'undefined') {
-    window.open(current.resolvedUrl, '_blank');
+    window.open(target, '_blank');
   }
 }
 

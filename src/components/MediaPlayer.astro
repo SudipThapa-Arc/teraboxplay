@@ -53,6 +53,15 @@
       </svg>
       <p class="player__idle-text">Paste a link above to start streaming</p>
     </div>
+
+    <!-- Error banner (shown on stream failure) -->
+    <div class="player__error" id="player-error" style="display: none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 6v4M10 13h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p class="player__error-text" id="player-error-text">Stream failed to load.</p>
+    </div>
   </div>
 
   <!-- Audio waveform (shown for audio files) -->
@@ -160,6 +169,76 @@
 <script>
   import { $stream } from "../stores/stream";
 
+  // ─── HLS.js loader ───
+  // Loaded lazily only when a .m3u8 manifest is detected.
+  let hlsInstance: { destroy(): void } | null = null;
+
+  async function attachHls(videoEl: HTMLVideoElement, src: string): Promise<void> {
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      hlsInstance = null;
+    }
+
+    // Load hls.js via a script tag — avoids TypeScript CDN module resolution errors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Hls: any = await loadHlsScript();
+
+    if (!Hls || !Hls.isSupported()) {
+      // Safari: native HLS support
+      videoEl.src = src;
+      videoEl.load();
+      return;
+    }
+
+    const hls = new Hls({ enableWorker: false });
+    hls.loadSource(src);
+    hls.attachMedia(videoEl);
+
+    hls.on(Hls.Events.ERROR, (_event: string, data: { fatal?: boolean; type?: string; details?: string }) => {
+      if (data.fatal) {
+        console.error('[HLS] Fatal error:', data.type, data.details);
+        showPlayerError(`HLS error: ${data.details ?? data.type ?? 'unknown'}`);
+        hls.destroy();
+        hlsInstance = null;
+      }
+    });
+
+    hlsInstance = hls;
+  }
+
+  /** Inject hls.js script tag and resolve with the global Hls constructor */
+  function loadHlsScript(): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((window as any).Hls) { resolve((window as any).Hls); return; }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
+      script.crossOrigin = 'anonymous';
+      script.onload = () => resolve((window as any).Hls); // eslint-disable-line @typescript-eslint/no-explicit-any
+      script.onerror = () => reject(new Error('Failed to load hls.js from CDN'));
+      document.head.appendChild(script);
+    });
+  }
+
+
+  function showPlayerError(msg: string) {
+    const errorEl  = document.getElementById('player-error')  as HTMLElement;
+    const errorTxt = document.getElementById('player-error-text') as HTMLElement;
+    const idle     = document.getElementById('player-idle')    as HTMLElement;
+    const overlay  = document.getElementById('player-overlay') as HTMLElement;
+    if (errorEl && errorTxt) {
+      errorTxt.textContent = msg;
+      errorEl.style.display = 'flex';
+    }
+    if (idle)    idle.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  function hidePlayerError() {
+    const errorEl = document.getElementById('player-error') as HTMLElement;
+    if (errorEl) errorEl.style.display = 'none';
+  }
+
   function initPlayer() {
     const videoEl = document.getElementById("media-video") as HTMLVideoElement;
     const audioEl = document.getElementById("media-audio") as HTMLAudioElement;
@@ -208,9 +287,7 @@
 
     if (!videoEl) return;
 
-    let isPlaying = false;
-
-    // Stream state subscription
+    // Play/Pause state
     $stream.subscribe((state) => {
       // Console log
       if (state.consoleLog.length > 0) {
@@ -222,11 +299,14 @@
       }
 
       if (state.status === "playing") {
+        hidePlayerError();
+        const srcUrl = state.proxyUrl || state.resolvedUrl;
+
         if (state.mediaType === "audio") {
           videoWrapper.style.display = "none";
           audioWrapper.style.display = "block";
           playerControls.style.display = "none";
-          audioEl.src = state.resolvedUrl;
+          audioEl.src = srcUrl;
           audioEl.load();
         } else {
           videoWrapper.style.display = "block";
@@ -234,16 +314,31 @@
           playerControls.style.display = "flex";
           playerIdle.style.display = "none";
           playerOverlay.style.display = "flex";
-          videoEl.src = state.resolvedUrl;
-          videoEl.load();
+
+          if (state.isHls) {
+            // Async HLS attach — catch and show error gracefully
+            attachHls(videoEl, srcUrl).catch((err: unknown) => {
+              console.error('[HLS] Load failed:', err);
+              showPlayerError('Failed to load HLS stream. Check the URL and try again.');
+            });
+          } else {
+            // Native video
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+            videoEl.src = srcUrl;
+            videoEl.load();
+          }
         }
       } else if (state.status === "idle") {
+        if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
         videoWrapper.style.display = "block";
         audioWrapper.style.display = "none";
         playerIdle.style.display = "flex";
         playerOverlay.style.display = "none";
         playerControls.style.display = "none";
         consoleDot.style.display = "none";
+        hidePlayerError();
+      } else if (state.status === "error") {
+        showPlayerError('Resolution failed. Check the console for details.');
       }
     });
 
@@ -251,13 +346,11 @@
     function togglePlay() {
       if (videoEl.paused) {
         videoEl.play();
-        isPlaying = true;
         playerOverlay.style.opacity = "0";
         ctrlPlayIcon.innerHTML =
           '<rect x="4" y="3" width="3" height="10" rx="1" fill="currentColor"/><rect x="9" y="3" width="3" height="10" rx="1" fill="currentColor"/>';
       } else {
         videoEl.pause();
-        isPlaying = false;
         playerOverlay.style.opacity = "1";
         ctrlPlayIcon.innerHTML =
           '<path d="M5 3l8 5-8 5V3z" fill="currentColor"/>';
@@ -402,6 +495,31 @@
     font-weight: 330;
     color: var(--color-ink);
   }
+
+  /* Error banner — Figma: white bg, hairline border, no shadow */
+  .player__error {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+  }
+
+  .player__error-text {
+    font-size: 14px;
+    font-weight: 330;
+    color: var(--color-ink);
+    opacity: 0.7;
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.5;
+  }
+
 
   /* Audio wrapper */
   .player__audio-wrapper {
