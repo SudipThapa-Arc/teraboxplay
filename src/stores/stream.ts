@@ -2,7 +2,6 @@ import { map } from 'nanostores';
 import { MOCK_MIRRORS, MOCK_CONSOLE_LOGS } from './mockData';
 import type { MirrorServer } from './mockData';
 import { supabase } from '../lib/supabase';
-import { $user } from './auth';
 
 // ─── Types ───
 export type StreamStatus = 'idle' | 'fetching' | 'resolving' | 'playing' | 'error';
@@ -119,9 +118,9 @@ export async function handleFetchLink(url: string): Promise<void> {
     });
 
     // ─── Insert into history table ───
-    const user = $user.get();
+    const { data: userData } = await supabase.auth.getUser();
     await supabase.from('history').insert({
-      user_id: user?.id ?? null,
+      user_id: userData?.user?.id ?? null,
       original_url: url,
       resolved_url,
       file_name,

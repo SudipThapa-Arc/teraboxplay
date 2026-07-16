@@ -1,6 +1,4 @@
 ---
-import { MOCK_HISTORY } from '../stores/mockData';
-const historyRecords = MOCK_HISTORY;
 ---
 
 <section class="color-block color-block-navy history" id="history-section">
@@ -9,7 +7,7 @@ const historyRecords = MOCK_HISTORY;
     <div class="history__header">
       <div class="history__title-row">
         <h2 class="history__title text-headline">Recent Links</h2>
-        <span class="history__count text-caption" id="history-count">{historyRecords.length} records</span>
+        <span class="history__count text-caption" id="history-count">0 records</span>
       </div>
 
       <!-- Filter tabs -->
@@ -34,93 +32,89 @@ const historyRecords = MOCK_HISTORY;
           </tr>
         </thead>
         <tbody id="history-tbody">
-          {historyRecords.map((record) => (
-            <tr class="history__row" data-type={record.media_type} data-id={record.id}>
-              <td class="history__td history__td--name">
-                <span class="history__file-icon" data-media-type={record.media_type}></span>
-                <span class="history__filename text-body-sm">{record.file_name}</span>
-              </td>
-              <td class="history__td history__td--size text-caption">{record.file_size}</td>
-              <td class="history__td history__td--type">
-                <span class={`badge badge--${record.media_type}`}>
-                  {record.media_type}
-                </span>
-              </td>
-              <td class="history__td history__td--date text-caption">{new Date(record.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
-              <td class="history__td history__td--action">
-                <button class="btn btn-secondary history__restream-btn" data-url={record.original_url}>
-                  Re-stream
-                </button>
-              </td>
-            </tr>
-          ))}
+          <!-- Rows hydrated via JS -->
         </tbody>
       </table>
     </div>
 
     <!-- Cards (mobile) -->
     <div class="history__cards" id="history-cards">
-      {historyRecords.map((record) => (
-        <div class="history__card" data-type={record.media_type} data-id={record.id}>
-          <div class="history__card-header">
-            <span class={`badge badge--${record.media_type}`}>
-              {record.media_type}
-            </span>
-            <span class="history__card-date text-caption">{new Date(record.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-          </div>
-          <p class="history__card-name text-body-sm">{record.file_name}</p>
-          <div class="history__card-footer">
-            <span class="history__card-size text-caption">{record.file_size}</span>
-            <button class="btn btn-secondary history__restream-btn" data-url={record.original_url} style="min-height: 32px; padding: 4px 12px; font-size: 14px;">
-              Re-stream
-            </button>
-          </div>
-        </div>
-      ))}
+      <!-- Cards hydrated via JS -->
     </div>
   </div>
 </section>
 
 <script>
-  import { $historyFilter, setHistoryFilter, type HistoryFilter } from '../stores/history';
+  import { $historyFilter, $historyRecords, setHistoryFilter, initHistoryStore, formatRelativeTime } from '../stores/history';
   import { handleFetchLink } from '../stores/stream';
 
-  function initHistoryGrid() {
-    const filtersContainer = document.getElementById('history-filters') as HTMLElement;
-    const rows = document.querySelectorAll('.history__row');
-    const cards = document.querySelectorAll('.history__card');
-    const countEl = document.getElementById('history-count') as HTMLElement;
+  const SVG_VIDEO = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>`;
+  const SVG_AUDIO = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`;
+  const SVG_DOC   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
 
-    filtersContainer?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('.history__filter-btn') as HTMLElement | null;
-      if (!btn) return;
-      const filter = btn.dataset.filter as HistoryFilter;
-      setHistoryFilter(filter);
+  function getIcon(type: string) {
+    if (type === 'video') return SVG_VIDEO;
+    if (type === 'audio') return SVG_AUDIO;
+    return SVG_DOC;
+  }
+
+  function renderHistory(records: readonly any[]) {
+    const tbody = document.getElementById('history-tbody');
+    const cards = document.getElementById('history-cards');
+    if (!tbody || !cards) return;
+
+    // Clean previous trees
+    tbody.innerHTML = '';
+    cards.innerHTML = '';
+
+    records.forEach(record => {
+      const dateStr = formatRelativeTime(record.created_at);
+
+      // Desktop Row
+      const tr = document.createElement('tr');
+      tr.className = 'history__row';
+      tr.dataset.type = record.media_type;
+      tr.dataset.id = record.id;
+      tr.innerHTML = `
+        <td class="history__td history__td--name">
+          <span class="history__file-icon">${getIcon(record.media_type)}</span>
+          <span class="history__filename text-body-sm">${record.file_name}</span>
+        </td>
+        <td class="history__td history__td--size text-caption">${record.file_size}</td>
+        <td class="history__td history__td--type">
+          <span class="badge badge--${record.media_type}">${record.media_type}</span>
+        </td>
+        <td class="history__td history__td--date text-caption">${dateStr}</td>
+        <td class="history__td history__td--action">
+          <button class="btn btn-secondary history__restream-btn" data-url="${record.original_url}">
+            Re-stream
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      // Mobile Card
+      const card = document.createElement('div');
+      card.className = 'history__card';
+      card.dataset.type = record.media_type;
+      card.dataset.id = record.id;
+      card.innerHTML = `
+        <div class="history__card-header">
+          <span class="badge badge--${record.media_type}">${record.media_type}</span>
+          <span class="history__card-date text-caption">${dateStr}</span>
+        </div>
+        <p class="history__card-name text-body-sm">${record.file_name}</p>
+        <div class="history__card-footer">
+          <span class="history__card-size text-caption">${record.file_size}</span>
+          <button class="btn btn-secondary history__restream-btn" data-url="${record.original_url}" style="min-height: 32px; padding: 4px 12px; font-size: 14px;">
+            Re-stream
+          </button>
+        </div>
+      `;
+      cards.appendChild(card);
     });
 
-    $historyFilter.subscribe(filter => {
-      filtersContainer?.querySelectorAll('.history__filter-btn').forEach(btn => {
-        const f = (btn as HTMLElement).dataset.filter;
-        btn.classList.toggle('history__filter-btn--active', f === filter);
-      });
-
-      let visibleCount = 0;
-      rows.forEach(row => {
-        const type = (row as HTMLElement).dataset.type;
-        const show = filter === 'all' || type === filter;
-        (row as HTMLElement).style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-      });
-
-      cards.forEach(card => {
-        const type = (card as HTMLElement).dataset.type;
-        const show = filter === 'all' || type === filter;
-        (card as HTMLElement).style.display = show ? '' : 'none';
-      });
-
-      countEl.textContent = `${visibleCount} records`;
-    });
-
+    // Attach listeners
     document.querySelectorAll('.history__restream-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const url = (btn as HTMLElement).dataset.url;
@@ -130,6 +124,57 @@ const historyRecords = MOCK_HISTORY;
         }
       });
     });
+
+    applyFilterDOM();
+  }
+
+  function applyFilterDOM() {
+    const filter = $historyFilter.get();
+    const rows = document.querySelectorAll('.history__row');
+    const cards = document.querySelectorAll('.history__card');
+    const countEl = document.getElementById('history-count');
+    
+    let visibleCount = 0;
+    rows.forEach(row => {
+      const type = (row as HTMLElement).dataset.type;
+      const show = filter === 'all' || type === filter;
+      (row as HTMLElement).style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+    });
+
+    cards.forEach(card => {
+      const type = (card as HTMLElement).dataset.type;
+      const show = filter === 'all' || type === filter;
+      (card as HTMLElement).style.display = show ? '' : 'none';
+    });
+
+    if (countEl) countEl.textContent = `${visibleCount} records`;
+
+    document.querySelectorAll('.history__filter-btn').forEach(btn => {
+      const f = (btn as HTMLElement).dataset.filter;
+      btn.classList.toggle('history__filter-btn--active', f === filter);
+    });
+  }
+
+  function initHistoryGrid() {
+    const filtersContainer = document.getElementById('history-filters');
+    filtersContainer?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.history__filter-btn') as HTMLElement | null;
+      if (!btn) return;
+      const filter = btn.dataset.filter as any;
+      setHistoryFilter(filter);
+    });
+
+    $historyRecords.subscribe(records => {
+      renderHistory(records);
+    });
+
+    $historyFilter.subscribe(() => {
+      applyFilterDOM();
+    });
+
+    // Hydrate store directly from DB
+    initHistoryStore();
   }
 
   initHistoryGrid();
@@ -137,6 +182,13 @@ const historyRecords = MOCK_HISTORY;
 </script>
 
 <style>
+  /* Base Container: Navy background, pure white text */
+  .history {
+    background-color: var(--color-block-navy) !important;
+    color: #ffffff;
+    box-shadow: none !important;
+  }
+
   .history__inner {
     max-width: 1280px;
     margin: 0 auto;
@@ -157,18 +209,25 @@ const historyRecords = MOCK_HISTORY;
     gap: var(--spacing-sm);
   }
 
+  .history__title {
+    color: #ffffff;
+    margin: 0;
+  }
+
   .history__count {
-    opacity: 0.6;
+    color: #ffffff;
+    /* Use solid color instead of opacity as requested */
   }
 
   /* Filters */
   .history__filters {
     display: flex;
     gap: var(--spacing-xxs);
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-pill);
     padding: var(--spacing-xxs);
+    box-shadow: none;
   }
 
   .history__filter-btn {
@@ -176,51 +235,55 @@ const historyRecords = MOCK_HISTORY;
     background: transparent;
     border: none;
     border-radius: var(--radius-pill);
-    color: rgba(255, 255, 255, 0.7);
+    color: #ffffff;
     font-size: 14px;
     font-family: var(--font-sans);
     font-weight: 500;
     cursor: pointer;
     transition: all var(--duration-fast) var(--ease-out);
     white-space: nowrap;
+    box-shadow: none;
   }
   .history__filter-btn:hover {
-    color: var(--color-inverse-ink);
+    background-color: rgba(255, 255, 255, 0.1);
   }
   .history__filter-btn--active {
-    background-color: var(--color-inverse-ink);
-    color: var(--color-ink);
+    background-color: #ffffff;
+    color: var(--color-block-navy);
   }
   .history__filter-btn:focus-visible {
-    outline: 2px solid var(--color-inverse-ink);
+    outline: 2px solid #ffffff;
     outline-offset: 2px;
   }
 
   /* Table */
   .history__table-wrapper {
     overflow-x: auto;
+    box-shadow: none;
   }
 
   .history__table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0; /* Remove radius to avoid card-like look */
     overflow: hidden;
+    background-color: transparent; /* Directly on Navy */
+    box-shadow: none;
   }
 
   .history__th {
     padding: var(--spacing-sm) var(--spacing-lg);
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
+    color: #ffffff;
     text-align: left;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.60px; /* tracking-[0.60px] */
     font-family: var(--font-mono);
-    background-color: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Translucent divider */
     white-space: nowrap;
   }
   .history__th--action {
@@ -230,23 +293,25 @@ const historyRecords = MOCK_HISTORY;
   /* Vertical column rules */
   .history__th + .history__th,
   .history__td + .history__td {
-    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .history__row {
+    background-color: transparent;
     transition: background-color var(--duration-fast) var(--ease-out);
   }
   .history__row:hover {
     background-color: rgba(255, 255, 255, 0.05);
   }
   .history__row + .history__row .history__td {
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Translucent divider */
   }
 
   .history__td {
     padding: var(--spacing-sm) var(--spacing-lg);
     vertical-align: middle;
     white-space: nowrap;
+    color: #ffffff;
   }
 
   .history__td--name {
@@ -258,19 +323,21 @@ const historyRecords = MOCK_HISTORY;
   .history__filename {
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: var(--font-sans);
+    color: #ffffff;
   }
   .history__file-icon {
     display: inline-flex;
-    color: rgba(255, 255, 255, 0.6);
+    color: #ffffff;
     flex-shrink: 0;
   }
 
   .history__td--size {
-    color: rgba(255, 255, 255, 0.6);
+    color: #ffffff;
   }
 
   .history__td--date {
-    color: rgba(255, 255, 255, 0.4);
+    color: #ffffff;
   }
 
   .history__td--action {
@@ -286,6 +353,8 @@ const historyRecords = MOCK_HISTORY;
     font-size: 12px;
     font-family: var(--font-mono);
     text-transform: uppercase;
+    letter-spacing: 0.60px;
+    color: #ffffff;
   }
 
   /* Cards (mobile) */
@@ -297,9 +366,10 @@ const historyRecords = MOCK_HISTORY;
 
   .history__card {
     padding: var(--spacing-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-lg);
-    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Translucent divider */
+    border-radius: 0;
+    background-color: transparent; /* Directly on Navy */
+    box-shadow: none;
   }
 
   .history__card-header {
@@ -309,12 +379,14 @@ const historyRecords = MOCK_HISTORY;
     margin-bottom: var(--spacing-sm);
   }
   .history__card-date {
-    color: rgba(255, 255, 255, 0.4);
+    color: #ffffff;
   }
   .history__card-name {
     font-weight: 500;
     margin-bottom: var(--spacing-lg);
     word-break: break-all;
+    font-family: var(--font-sans);
+    color: #ffffff;
   }
   .history__card-footer {
     display: flex;
@@ -322,7 +394,7 @@ const historyRecords = MOCK_HISTORY;
     justify-content: space-between;
   }
   .history__card-size {
-    color: rgba(255, 255, 255, 0.6);
+    color: #ffffff;
   }
 
   /* Responsive */
@@ -343,9 +415,11 @@ const historyRecords = MOCK_HISTORY;
     min-height: 32px;
     padding: 4px 12px;
     font-size: 14px;
+    border-radius: var(--radius-pill);
   }
   .history__restream-btn:focus-visible {
-    outline: 2px solid var(--color-inverse-ink);
+    outline: 2px solid #ffffff;
     outline-offset: 2px;
   }
 </style>
+

@@ -1,6 +1,7 @@
 import { atom, computed } from 'nanostores';
 import { MOCK_HISTORY } from './mockData';
 import type { HistoryRecord } from './mockData';
+import { supabase } from '../lib/supabase';
 
 // ─── Types ───
 export type HistoryFilter = 'all' | 'video' | 'audio' | 'document';
@@ -61,4 +62,31 @@ export function formatRelativeTime(dateStr: string): string {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Initialize history from Supabase and subscribe to realtime changes.
+ */
+export async function initHistoryStore(): Promise<void> {
+  // Initial fetch
+  const { data } = await supabase
+    .from('history')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (data && data.length > 0) {
+    $historyRecords.set(data as HistoryRecord[]);
+  }
+
+  // Subscribe to realtime inserts
+  supabase
+    .channel('history-realtime')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'history' },
+      (payload) => {
+        addHistoryRecord(payload.new as HistoryRecord);
+      }
+    )
+    .subscribe();
 }
